@@ -1,0 +1,84 @@
+# philiprehberger-env-validator
+
+Schema-based environment variable validation with type coercion and helpful error messages.
+
+## Installation
+
+```bash
+pip install philiprehberger-env-validator
+```
+
+## Usage
+
+### Basic Validation
+
+```python
+from philiprehberger_env_validator import Schema, validate
+
+schema = (
+    Schema()
+    .string("DATABASE_URL", description="PostgreSQL connection string")
+    .integer("PORT", default=3000)
+    .boolean("DEBUG", default=False)
+    .string("NODE_ENV", choices=["development", "staging", "production"])
+)
+
+config = validate(schema)
+print(config["PORT"])  # 3000 (int, not string)
+```
+
+### Field Types
+
+```python
+schema = (
+    Schema()
+    .string("API_KEY")
+    .integer("MAX_CONNECTIONS")
+    .float_field("RATE_LIMIT")
+    .boolean("VERBOSE")
+    .url("WEBHOOK_URL")
+    .email("ADMIN_EMAIL")
+)
+```
+
+### Custom Validation
+
+```python
+schema = Schema().string(
+    "API_KEY",
+    pattern=r"^sk-[a-zA-Z0-9]{32}$",
+    validator=lambda v: len(v) > 10,
+)
+```
+
+### Optional Fields
+
+```python
+schema = (
+    Schema()
+    .string("REQUIRED_VAR")
+    .string("OPTIONAL_VAR", required=False, default="fallback")
+)
+```
+
+### Custom Source
+
+```python
+config = validate(schema, source={"PORT": "8080", "DEBUG": "true"})
+```
+
+### Error Handling
+
+```python
+from philiprehberger_env_validator import ValidationError
+
+try:
+    config = validate(schema)
+except ValidationError as e:
+    for error in e.errors:
+        print(error)
+```
+
+## License
+
+MIT
