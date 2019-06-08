@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "philiprehberger-env-validator"
-version = "0.1.0"
+version = "0.1.1"
 description = "Schema-based environment variable validation with type coercion and helpful error messages"
 readme = "README.md"
 license = "MIT"
@@ -24,6 +24,7 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/philiprehberger/py-env-validator"
+Homepage = "https://github.com/philiprehberger/py-env-validator#readme"
 Repository = "https://github.com/philiprehberger/py-env-validator"
 Issues = "https://github.com/philiprehberger/py-env-validator/issues"
+Changelog = "https://github.com/philiprehberger/py-env-validator/blob/main/CHANGELOG.md"
