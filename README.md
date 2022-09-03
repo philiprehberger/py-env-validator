@@ -84,6 +84,15 @@ except ValidationError as e:
 ```
 
 
+## API
+
+| Function / Class | Description |
+|------------------|-------------|
+| `validate(schema, source)` | Validate environment variables against a schema, returning typed dict |
+| `Schema` | Fluent schema builder with `string()`, `integer()`, `float_field()`, `boolean()`, `url()`, `email()` methods |
+| `FieldSpec` | Field specification with type, default, choices, pattern, and validator options |
+| `ValidationError` | Raised when validation fails, contains list of error messages in `errors` |
+
 ## Development
 
 ```bash
