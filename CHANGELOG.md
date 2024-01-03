@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0 (2026-03-27)
+
+- Add `Schema.generate_help()` method for formatted schema documentation
+- Add `Schema.load_from_env_file(path)` method for .env file loading and validation
+- Add 8 badges, Support section, and compliance fixes to README
+- Add `[tool.pytest.ini_options]` and `[tool.mypy]` to pyproject.toml
+- Add `.github/` issue templates, PR template, and Dependabot config
+
 ## 0.1.5
 
 - Add Development section to README
