@@ -1,5 +1,9 @@
 # philiprehberger-env-validator
 
+[![Tests](https://github.com/philiprehberger/py-env-validator/actions/workflows/publish.yml/badge.svg)](https://github.com/philiprehberger/py-env-validator/actions/workflows/publish.yml)
+[![PyPI version](https://img.shields.io/pypi/v/philiprehberger-env-validator.svg)](https://pypi.org/project/philiprehberger-env-validator/)
+[![License](https://img.shields.io/github/license/philiprehberger/py-env-validator)](LICENSE)
+
 Schema-based environment variable validation with type coercion and helpful error messages.
 
 ## Installation
