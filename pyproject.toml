@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "philiprehberger-env-validator"
-version = "0.1.5"
+version = "0.1.6"
 description = "Schema-based environment variable validation with type coercion and helpful error messages"
 readme = "README.md"
 license = "MIT"
@@ -31,3 +31,9 @@ Changelog = "https://github.com/philiprehberger/py-env-validator/blob/main/CHANG
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/philiprehberger_env_validator"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.mypy]
+strict = true
