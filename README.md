@@ -2,7 +2,11 @@
 
 [![Tests](https://github.com/philiprehberger/py-env-validator/actions/workflows/publish.yml/badge.svg)](https://github.com/philiprehberger/py-env-validator/actions/workflows/publish.yml)
 [![PyPI version](https://img.shields.io/pypi/v/philiprehberger-env-validator.svg)](https://pypi.org/project/philiprehberger-env-validator/)
+[![GitHub release](https://img.shields.io/github/v/release/philiprehberger/py-env-validator)](https://github.com/philiprehberger/py-env-validator/releases)
+[![Last updated](https://img.shields.io/github/last-commit/philiprehberger/py-env-validator)](https://github.com/philiprehberger/py-env-validator/commits/main)
 [![License](https://img.shields.io/github/license/philiprehberger/py-env-validator)](LICENSE)
+[![Bug Reports](https://img.shields.io/github/issues/philiprehberger/py-env-validator/bug)](https://github.com/philiprehberger/py-env-validator/issues?q=is%3Aissue+is%3Aopen+label%3Abug)
+[![Feature Requests](https://img.shields.io/github/issues/philiprehberger/py-env-validator/enhancement)](https://github.com/philiprehberger/py-env-validator/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement)
 [![Sponsor](https://img.shields.io/badge/sponsor-GitHub%20Sponsors-ec6cb9)](https://github.com/sponsors/philiprehberger)
 
 Schema-based environment variable validation with type coercion and helpful error messages.
@@ -84,14 +88,57 @@ except ValidationError as e:
         print(error)
 ```
 
+### Schema Documentation
+
+Generate formatted help text documenting all fields, grouped by required and optional.
+
+```python
+schema = (
+    Schema()
+    .url("DATABASE_URL", description="PostgreSQL connection string")
+    .string("API_KEY")
+    .boolean("DEBUG", default=False, required=False, description="Enable debug mode")
+    .integer("PORT", default=8000, required=False)
+)
+
+print(schema.generate_help())
+# REQUIRED:
+#   DATABASE_URL (url): PostgreSQL connection string
+#   API_KEY (str): No description
+#
+# OPTIONAL:
+#   DEBUG (bool) [default: false]: Enable debug mode
+#   PORT (int) [default: 8000]: No description
+```
+
+### Load from .env File
+
+Read and validate a `.env` file directly against a schema.
+
+```python
+schema = (
+    Schema()
+    .string("DATABASE_URL")
+    .integer("PORT", default=3000)
+    .boolean("DEBUG", default=False)
+)
+
+config = schema.load_from_env_file(".env")
+print(config["DATABASE_URL"])
+print(config["PORT"])  # coerced to int
+```
+
+The `.env` file uses standard `KEY=VALUE` format. Comments (`#`) and blank lines are skipped. Quoted values are unquoted automatically.
 
 ## API
 
 | Function / Class | Description |
-|------------------|-------------|
+|---|---|
 | `validate(schema, source)` | Validate environment variables against a schema, returning typed dict |
 | `Schema` | Fluent schema builder with `string()`, `integer()`, `float_field()`, `boolean()`, `url()`, `email()` methods |
-| `FieldSpec` | Field specification with type, default, choices, pattern, and validator options |
+| `Schema.generate_help()` | Return formatted help text documenting all fields grouped by required/optional |
+| `Schema.load_from_env_file(path)` | Load and validate a `.env` file against the schema |
+| `FieldSpec` | Field specification with type, default, choices, pattern, validator, and description options |
 | `ValidationError` | Raised when validation fails, contains list of error messages in `errors` |
 
 ## Development
@@ -101,6 +148,13 @@ pip install -e .
 python -m pytest tests/ -v
 ```
 
+## Support
+
+If you find this package useful, consider giving it a star on GitHub — it helps motivate continued maintenance and development.
+
+[![LinkedIn](https://img.shields.io/badge/Philip%20Rehberger-LinkedIn-0A66C2?logo=linkedin)](https://www.linkedin.com/in/philiprehberger)
+[![More packages](https://img.shields.io/badge/more-open%20source%20packages-blue)](https://philiprehberger.com/open-source-packages)
+
 ## License
 
-MIT
+[MIT](LICENSE)

@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import re
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Callable
 
 
@@ -51,6 +52,51 @@ class Schema:
     def email(self, name: str, **kwargs: Any) -> Schema:
         self.fields[name] = FieldSpec(type="email", **kwargs)
         return self
+
+    def generate_help(self) -> str:
+        """Return formatted text documenting all fields grouped by REQUIRED and OPTIONAL."""
+        required_lines: list[str] = []
+        optional_lines: list[str] = []
+
+        for name, spec in self.fields.items():
+            desc = spec.description if spec.description else "No description"
+            if spec.required and spec.default is None:
+                required_lines.append(f"  {name} ({spec.type}): {desc}")
+            else:
+                default_str = str(spec.default).lower() if isinstance(spec.default, bool) else str(spec.default)
+                if spec.default is not None:
+                    optional_lines.append(f"  {name} ({spec.type}) [default: {default_str}]: {desc}")
+                else:
+                    optional_lines.append(f"  {name} ({spec.type}): {desc}")
+
+        sections: list[str] = []
+        if required_lines:
+            sections.append("REQUIRED:\n" + "\n".join(required_lines))
+        if optional_lines:
+            sections.append("OPTIONAL:\n" + "\n".join(optional_lines))
+
+        return "\n\n".join(sections)
+
+    def load_from_env_file(self, path: str | Path) -> dict[str, Any]:
+        """Read a .env file, validate against this schema, and return the coerced dict."""
+        env_path = Path(path)
+        source: dict[str, str] = {}
+
+        with open(env_path) as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                if "=" not in line:
+                    continue
+                key, _, value = line.partition("=")
+                key = key.strip()
+                value = value.strip()
+                if value and len(value) >= 2 and value[0] == value[-1] and value[0] in ('"', "'"):
+                    value = value[1:-1]
+                source[key] = value
+
+        return validate(self, source=source)
 
 
 def _coerce(value: str, type_name: str) -> Any:
