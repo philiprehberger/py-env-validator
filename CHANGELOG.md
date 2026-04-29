@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0 (2026-04-28)
+
+- Add `Schema.list_field(name, *, sep=",", item_type=str)` for parsing comma-separated list values with optional per-item type coercion (`str`, `int`, `float`)
+- Add module docstring and `from __future__ import annotations` to package modules
+- Fix `pyproject.toml` description to end with a period (matches README)
+
 ## 0.2.1 (2026-03-31)
 
 - Standardize README to 3-badge format with emoji Support section

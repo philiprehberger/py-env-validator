@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "philiprehberger-env-validator"
-version = "0.2.1"
-description = "Schema-based environment variable validation with type coercion and helpful error messages"
+version = "0.3.0"
+description = "Schema-based environment variable validation with type coercion and helpful error messages."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"

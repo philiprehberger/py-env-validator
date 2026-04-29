@@ -125,12 +125,37 @@ print(config["PORT"])  # coerced to int
 
 The `.env` file uses standard `KEY=VALUE` format. Comments (`#`) and blank lines are skipped. Quoted values are unquoted automatically.
 
+### List Fields
+
+`list_field()` parses comma-separated values into a list, with optional per-item type coercion.
+
+```python
+schema = (
+    Schema()
+    .list_field("ALLOWED_HOSTS")               # default: split on "," as strings
+    .list_field("PORTS", item_type=int)        # coerce each element to int
+    .list_field("PATHS", sep=":")              # custom separator
+)
+
+config = validate(schema, source={
+    "ALLOWED_HOSTS": "a.com, b.com, c.com",
+    "PORTS": "80,443,8080",
+    "PATHS": "/usr/bin:/usr/local/bin",
+})
+# {
+#   "ALLOWED_HOSTS": ["a.com", "b.com", "c.com"],
+#   "PORTS": [80, 443, 8080],
+#   "PATHS": ["/usr/bin", "/usr/local/bin"],
+# }
+```
+
 ## API
 
 | Function / Class | Description |
 |---|---|
 | `validate(schema, source)` | Validate environment variables against a schema, returning typed dict |
-| `Schema` | Fluent schema builder with `string()`, `integer()`, `float_field()`, `boolean()`, `url()`, `email()` methods |
+| `Schema` | Fluent schema builder with `string()`, `integer()`, `float_field()`, `boolean()`, `url()`, `email()`, `list_field()` methods |
+| `Schema.list_field(name, *, sep=",", item_type=str)` | Parse a comma-separated list with optional `int`/`float` coercion |
 | `Schema.generate_help()` | Return formatted help text documenting all fields grouped by required/optional |
 | `Schema.load_from_env_file(path)` | Load and validate a `.env` file against the schema |
 | `FieldSpec` | Field specification with type, default, choices, pattern, validator, and description options |

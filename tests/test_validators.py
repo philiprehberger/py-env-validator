@@ -155,3 +155,47 @@ def test_empty_string_treated_as_missing() -> None:
     schema = Schema().string("APP_NAME")
     with pytest.raises(ValidationError):
         validate(schema, source={"APP_NAME": ""})
+
+
+def test_validate_list_default_str_items() -> None:
+    schema = Schema().list_field("HOSTS")
+    result = validate(schema, source={"HOSTS": "a.com,b.com,c.com"})
+    assert result == {"HOSTS": ["a.com", "b.com", "c.com"]}
+
+
+def test_validate_list_int_items() -> None:
+    schema = Schema().list_field("PORTS", item_type=int)
+    result = validate(schema, source={"PORTS": "80,443,8080"})
+    assert result == {"PORTS": [80, 443, 8080]}
+
+
+def test_validate_list_float_items() -> None:
+    schema = Schema().list_field("WEIGHTS", item_type=float)
+    result = validate(schema, source={"WEIGHTS": "1.0,2.5,3.7"})
+    assert result == {"WEIGHTS": [1.0, 2.5, 3.7]}
+
+
+def test_validate_list_custom_separator() -> None:
+    schema = Schema().list_field("PATHS", sep=":")
+    result = validate(schema, source={"PATHS": "/usr/bin:/usr/local/bin:/opt/bin"})
+    assert result == {"PATHS": ["/usr/bin", "/usr/local/bin", "/opt/bin"]}
+
+
+def test_validate_list_strips_whitespace_and_empty() -> None:
+    schema = Schema().list_field("HOSTS")
+    result = validate(schema, source={"HOSTS": "a.com, b.com ,, c.com"})
+    assert result == {"HOSTS": ["a.com", "b.com", "c.com"]}
+
+
+def test_validate_list_invalid_int_raises() -> None:
+    schema = Schema().list_field("PORTS", item_type=int)
+    with pytest.raises(ValidationError) as exc_info:
+        validate(schema, source={"PORTS": "80,not-a-port"})
+    assert "cannot be converted to list" in exc_info.value.errors[0]
+
+
+def test_validate_list_optional_with_default() -> None:
+    schema = Schema().list_field("TAGS", required=False, default=[])
+    result = validate(schema, source={})
+    assert result == {"TAGS": []}
+

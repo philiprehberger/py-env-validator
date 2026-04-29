@@ -1,3 +1,5 @@
+"""Validation logic for schema-based environment variable parsing."""
+
 from __future__ import annotations
 
 import os
@@ -23,6 +25,8 @@ class FieldSpec:
     pattern: str | None = None
     validator: Callable[[str], bool] | None = None
     description: str = ""
+    sep: str = ","
+    item_type: type = str
 
 
 @dataclass
@@ -51,6 +55,28 @@ class Schema:
 
     def email(self, name: str, **kwargs: Any) -> Schema:
         self.fields[name] = FieldSpec(type="email", **kwargs)
+        return self
+
+    def list_field(
+        self,
+        name: str,
+        *,
+        sep: str = ",",
+        item_type: type = str,
+        **kwargs: Any,
+    ) -> Schema:
+        """Add a list-of-values field (split on *sep* with optional per-item coercion).
+
+        Args:
+            name: Variable name to read.
+            sep: Separator between list elements (default ``","``).
+            item_type: Per-item type — ``str`` (default), ``int``, or ``float``.
+            **kwargs: Standard FieldSpec options (required, default, description, ...).
+
+        Source value ``"a,b,c"`` becomes ``["a", "b", "c"]``. Empty elements
+        and surrounding whitespace are stripped.
+        """
+        self.fields[name] = FieldSpec(type="list", sep=sep, item_type=item_type, **kwargs)
         return self
 
     def generate_help(self) -> str:
@@ -99,7 +125,7 @@ class Schema:
         return validate(self, source=source)
 
 
-def _coerce(value: str, type_name: str) -> Any:
+def _coerce(value: str, type_name: str, *, sep: str = ",", item_type: type = str) -> Any:
     if type_name == "str":
         return value
     if type_name == "int":
@@ -112,6 +138,11 @@ def _coerce(value: str, type_name: str) -> Any:
         return value
     if type_name == "email":
         return value
+    if type_name == "list":
+        parts = [item.strip() for item in value.split(sep) if item.strip()]
+        if item_type is str:
+            return parts
+        return [item_type(p) for p in parts]
     return value
 
 
@@ -156,7 +187,7 @@ def validate(
             continue
 
         try:
-            coerced = _coerce(raw, spec.type)
+            coerced = _coerce(raw, spec.type, sep=spec.sep, item_type=spec.item_type)
         except (ValueError, TypeError):
             errors.append(f"{name} cannot be converted to {spec.type}: '{raw}'")
             continue
