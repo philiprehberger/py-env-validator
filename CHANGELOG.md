@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.0 (2026-05-30)
+
+- Add `Schema.json_field()` for parsing JSON-encoded env vars
+- Add `Schema.from_dict()` classmethod for declarative schema construction
+
 ## 0.3.0 (2026-04-28)
 
 - Add `Schema.list_field(name, *, sep=",", item_type=str)` for parsing comma-separated list values with optional per-item type coercion (`str`, `int`, `float`)

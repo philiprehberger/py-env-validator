@@ -199,3 +199,40 @@ def test_validate_list_optional_with_default() -> None:
     result = validate(schema, source={})
     assert result == {"TAGS": []}
 
+
+def test_validate_json_field_valid_object() -> None:
+    schema = Schema().json_field("CFG")
+    result = validate(schema, source={"CFG": '{"a": 1}'})
+    assert result == {"CFG": {"a": 1}}
+
+
+def test_validate_json_field_invalid_raises() -> None:
+    schema = Schema().json_field("CFG")
+    with pytest.raises(ValidationError) as exc_info:
+        validate(schema, source={"CFG": "not json"})
+    assert "cannot be converted to json" in exc_info.value.errors[0]
+
+
+def test_validate_json_field_optional_with_default() -> None:
+    schema = Schema().json_field("CFG", required=False, default={"a": 0})
+    result = validate(schema, source={})
+    assert result == {"CFG": {"a": 0}}
+
+
+def test_schema_from_dict_builds_working_schema() -> None:
+    schema = Schema.from_dict(
+        {
+            "PORT": {"type": "integer"},
+            "DEBUG": {"type": "boolean", "default": False},
+        }
+    )
+    result = validate(schema, source={"PORT": "8080", "DEBUG": "true"})
+    assert result == {"PORT": 8080, "DEBUG": True}
+
+
+def test_schema_from_dict_unknown_type_raises_key_error() -> None:
+    # An unknown type lookup against the dispatch dict raises KeyError
+    # (the natural exception for a missing dict key).
+    with pytest.raises(KeyError):
+        Schema.from_dict({"X": {"type": "unknown"}})
+

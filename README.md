@@ -149,6 +149,45 @@ config = validate(schema, source={
 # }
 ```
 
+### JSON values
+
+`json_field()` parses an env var value as JSON, returning the decoded object.
+
+```python
+schema = (
+    Schema()
+    .json_field("FEATURE_FLAGS")
+    .json_field("LIMITS", required=False, default={"max": 100})
+)
+
+config = validate(schema, source={
+    "FEATURE_FLAGS": '{"beta": true, "experimental": false}',
+})
+# {
+#   "FEATURE_FLAGS": {"beta": True, "experimental": False},
+#   "LIMITS": {"max": 100},
+# }
+```
+
+Invalid JSON raises `ValidationError` with a "cannot be converted to json" message.
+
+### Declarative schemas
+
+`Schema.from_dict()` builds a schema from a plain dict — useful when the schema is loaded from YAML/JSON config rather than written in code.
+
+```python
+schema = Schema.from_dict({
+    "PORT": {"type": "integer", "default": 8080},
+    "DEBUG": {"type": "boolean", "default": False},
+    "HOSTS": {"type": "list", "sep": ","},
+    "FEATURES": {"type": "json", "required": False, "default": {}},
+})
+
+config = validate(schema, source={"PORT": "3000", "DEBUG": "true", "HOSTS": "a,b"})
+```
+
+Supported `type` values: `"string"`, `"integer"`, `"float"`, `"boolean"`, `"url"`, `"email"`, `"list"`, `"json"`. Remaining keys are forwarded to the corresponding fluent method.
+
 ## API
 
 | Function / Class | Description |
@@ -156,6 +195,8 @@ config = validate(schema, source={
 | `validate(schema, source)` | Validate environment variables against a schema, returning typed dict |
 | `Schema` | Fluent schema builder with `string()`, `integer()`, `float_field()`, `boolean()`, `url()`, `email()`, `list_field()` methods |
 | `Schema.list_field(name, *, sep=",", item_type=str)` | Parse a comma-separated list with optional `int`/`float` coercion |
+| `Schema.json_field(name, required=True, default=None)` | Parse the env var value as JSON via `json.loads` |
+| `Schema.from_dict(spec)` | Build a `Schema` declaratively from a dict mapping field name to kwargs (with a `"type"` key) |
 | `Schema.generate_help()` | Return formatted help text documenting all fields grouped by required/optional |
 | `Schema.load_from_env_file(path)` | Load and validate a `.env` file against the schema |
 | `FieldSpec` | Field specification with type, default, choices, pattern, validator, and description options |

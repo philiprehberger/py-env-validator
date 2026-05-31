@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import re
 from dataclasses import dataclass, field
@@ -79,6 +80,61 @@ class Schema:
         self.fields[name] = FieldSpec(type="list", sep=sep, item_type=item_type, **kwargs)
         return self
 
+    def json_field(
+        self,
+        name: str,
+        *,
+        required: bool = True,
+        default: Any = None,
+        description: str = "",
+    ) -> Schema:
+        """Add a field whose value is parsed as JSON.
+
+        The env var value is run through json.loads. Validation fails
+        with ValidationError if the value is not parseable.
+        """
+        self.fields[name] = FieldSpec(
+            type="json",
+            required=required,
+            default=default,
+            description=description,
+        )
+        return self
+
+    @classmethod
+    def from_dict(cls, spec: dict[str, dict[str, Any]]) -> Schema:
+        """Build a Schema declaratively from a dict.
+
+        Each entry maps field name to a kwargs dict; the kwargs dict must
+        contain a ``"type"`` key naming one of: ``"string"``, ``"integer"``,
+        ``"float"``, ``"boolean"``, ``"url"``, ``"email"``, ``"list"``,
+        ``"json"``. Remaining kwargs are forwarded to the corresponding
+        fluent method.
+
+        Example:
+            schema = Schema.from_dict({
+                "PORT": {"type": "integer", "default": 8080},
+                "HOSTS": {"type": "list", "sep": ","},
+            })
+        """
+        schema = cls()
+        dispatch: dict[str, Callable[..., Schema]] = {
+            "string": schema.string,
+            "integer": schema.integer,
+            "float": schema.float_field,
+            "boolean": schema.boolean,
+            "url": schema.url,
+            "email": schema.email,
+            "list": schema.list_field,
+            "json": schema.json_field,
+        }
+        for name, kwargs in spec.items():
+            kwargs_copy = dict(kwargs)
+            type_name = kwargs_copy.pop("type")
+            method = dispatch[type_name]
+            method(name, **kwargs_copy)
+        return schema
+
     def generate_help(self) -> str:
         """Return formatted text documenting all fields grouped by REQUIRED and OPTIONAL."""
         required_lines: list[str] = []
@@ -143,6 +199,8 @@ def _coerce(value: str, type_name: str, *, sep: str = ",", item_type: type = str
         if item_type is str:
             return parts
         return [item_type(p) for p in parts]
+    if type_name == "json":
+        return json.loads(value)
     return value
 
 
